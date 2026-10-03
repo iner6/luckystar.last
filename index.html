@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffe5ef">
+  <title>我们约会吧</title>
+  <style>
+    :root {
+      --ink: #6e485a;
+      --deep: #9e4f74;
+      --rose: #d878a3;
+      --line: rgba(187, 93, 136, .48);
+      --glass: rgba(255, 249, 252, .61);
+      --soft: rgba(255, 222, 235, .61);
+      font-family: "Microsoft YaHei", "Noto Sans SC", "PingFang SC", sans-serif;
+      color: var(--ink);
+      font-weight: 400;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 15% 8%, rgba(255,255,255,.95), transparent 32%),
+        linear-gradient(155deg, #ffe5ef, #fff6f9 52%, #f9d9e8);
+    }
+    button, textarea { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    #app { width: min(100%, 540px); margin: 0 auto; }
+    .screen { min-height: 100svh; padding-bottom: calc(116px + env(safe-area-inset-bottom)); }
+
+    .sheet {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 941 / 1670;
+      overflow: hidden;
+      background: url("background.png") center / 100% 100% no-repeat;
+      box-shadow: 0 22px 55px rgba(157, 69, 110, .22);
+    }
+    .sheet::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,.07), transparent 22%, rgba(255,255,255,.05));
+    }
+    .sheet-content {
+      position: absolute;
+      z-index: 1;
+      inset: 7.5% 6.6% 7.5%;
+      display: grid;
+      grid-template-rows: auto 1fr 1fr;
+      gap: 1.7%;
+    }
+    .title-wrap { text-align: center; }
+    .main-title {
+      margin: 0;
+      color: #82445f;
+      font-family: "Microsoft YaHei", "SimHei", "Noto Sans SC", sans-serif;
+      font-size: clamp(28px, 7.7vw, 42px);
+      font-weight: 700;
+      letter-spacing: .15em;
+      line-height: 1.1;
+      text-indent: .15em;
+      text-shadow: 0 2px 0 rgba(255,255,255,.92), 0 4px 12px rgba(170,82,121,.19);
+    }
+    .subtitle {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 1.8%;
+      color: rgba(126, 65, 91, .76);
+      font-size: clamp(9px, 2.45vw, 13px);
+      letter-spacing: .2em;
+    }
+    .subtitle::before, .subtitle::after {
+      content: "";
+      width: clamp(24px, 8vw, 44px);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(181,88,130,.6));
+    }
+    .subtitle::after { transform: scaleX(-1); }
+
+    .group {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1.5px solid var(--line);
+      border-radius: 18px;
+      background: var(--glass);
+      box-shadow: 0 10px 25px rgba(153, 66, 105, .13), inset 0 0 0 1px rgba(255,255,255,.48);
+      backdrop-filter: blur(2px);
+    }
+    .group-title {
+      flex: 0 0 auto;
+      margin: 0;
+      padding: 2.3% 3%;
+      color: #974f70;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(255,218,234,.74), rgba(255,248,251,.76), rgba(255,218,234,.74));
+      text-align: center;
+      font-size: clamp(14px, 3.8vw, 20px);
+      font-weight: 500;
+      letter-spacing: .18em;
+      line-height: 1.2;
+      text-indent: .18em;
+    }
+    .table {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-rows: .52fr repeat(4, 1fr);
+    }
+    .row {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 23% repeat(3, 1fr);
+    }
+    .cell {
+      min-width: 0;
+      min-height: 0;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .row:last-child .cell { border-bottom: 0; }
+    .cell:last-child { border-right: 0; }
+    .head {
+      display: grid;
+      place-items: center;
+      padding: 2px;
+      color: #96617a;
+      background: rgba(255, 232, 241, .56);
+      text-align: center;
+      font-size: clamp(8px, 2.45vw, 13px);
+      font-weight: 500;
+      line-height: 1.12;
+      letter-spacing: .03em;
+    }
+    .name {
+      display: grid;
+      place-items: center;
+      padding: 3px;
+      color: #854e67;
+      background: rgba(255, 240, 246, .48);
+      text-align: center;
+      font-size: clamp(9px, 2.6vw, 14px);
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+    .entry {
+      display: block;
+      width: 100%;
+      height: 100%;
+      resize: none;
+      overflow: hidden;
+      border: 0;
+      outline: 0;
+      padding: 6px 5px;
+      color: #72485c;
+      background: rgba(255,255,255,.18);
+      text-align: center;
+      font-size: clamp(8px, 2.25vw, 12px);
+      font-weight: 400;
+      line-height: 1.35;
+      transition: background .15s ease, box-shadow .15s ease;
+    }
+    .entry::placeholder { color: rgba(139, 83, 108, .44); }
+    .entry:focus {
+      background: rgba(255,255,255,.63);
+      box-shadow: inset 0 0 0 1.5px rgba(205,100,149,.45);
+    }
+
+    .actions {
+      position: fixed;
+      z-index: 10;
+      left: 50%;
+      bottom: 0;
+      width: min(100%, 540px);
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      gap: 9px;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(184, 91, 132, .2);
+      background: rgba(255, 247, 250, .88);
+      box-shadow: 0 -10px 30px rgba(129, 58, 91, .12);
+      backdrop-filter: blur(16px);
+    }
+    .action {
+      min-height: 48px;
+      border: 1px solid rgba(183, 88, 130, .36);
+      border-radius: 15px;
+      color: #8a4c68;
+      background: rgba(255,255,255,.72);
+      font-weight: 500;
+      letter-spacing: .06em;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(151, 67, 105, .08);
+      transition: transform .14s ease, box-shadow .14s ease, opacity .14s ease;
+    }
+    .action.primary {
+      border-color: #ce709a;
+      color: white;
+      background: linear-gradient(135deg, #dc84aa, #bd5f89);
+      box-shadow: 0 8px 20px rgba(184, 80, 128, .26);
+    }
+    .action:active { transform: translateY(1px) scale(.99); }
+    .action:disabled { opacity: .58; cursor: wait; }
+    .toast {
+      position: fixed;
+      z-index: 20;
+      left: 50%;
+      bottom: calc(86px + env(safe-area-inset-bottom));
+      transform: translate(-50%, 12px);
+      padding: 9px 14px;
+      border-radius: 999px;
+      color: white;
+      background: rgba(111, 62, 83, .91);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (min-width: 541px) {
+      body { padding-block: 24px 0; }
+      .sheet { border-radius: 24px 24px 0 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <div class="screen">
+      <section class="sheet" id="sheet" aria-label="我们约会吧选择表格">
+        <div class="sheet-content">
+          <header class="title-wrap">
+            <h1 class="main-title">我们约会吧</h1>
+            <div class="subtitle">心动选择记录</div>
+          </header>
+
+          <section class="group" aria-labelledby="boys-title">
+            <h2 class="group-title" id="boys-title">男生角色</h2>
+            <div class="table" data-group="男生角色"></div>
+          </section>
+
+          <section class="group" aria-labelledby="girls-title">
+            <h2 class="group-title" id="girls-title">女生角色</h2>
+            <div class="table" data-group="女生角色"></div>
+          </section>
+        </div>
+      </section>
+
+      <nav class="actions" aria-label="表格操作">
+        <button class="action primary" id="export" type="button">导出完整图片</button>
+        <button class="action" id="clear" type="button">清空内容</button>
+      </nav>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </main>
+  <script>
+    const groups = [
+      { title: "男生角色", names: ["顾星辰", "江叙白", "秋亦帆", "林泽宇"] },
+      { title: "女生角色", names: ["苏晚晴", "夏知柚", "许星眠", "温以宁"] }
+    ];
+    const rounds = ["第一次", "第二次", "第三次"];
+    const storageKey = "date-choice-poster-v1";
+    const tables = document.querySelectorAll(".table");
+    const toast = document.getElementById("toast");
+    const exportButton = document.getElementById("export");
+    let toastTimer;
+
+    function keyFor(groupIndex, rowIndex, roundIndex) {
+      return `${groupIndex}-${rowIndex}-${roundIndex}`;
+    }
+
+    function loadAnswers() {
+      try { return JSON.parse(localStorage.getItem(storageKey)) || {}; }
+      catch { return {}; }
+    }
+
+    function saveAnswers() {
+      const data = {};
+      document.querySelectorAll(".entry").forEach(input => {
+        if (input.value) data[input.dataset.key] = input.value;
+      });
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+
+    function buildTables() {
+      const saved = loadAnswers();
+      groups.forEach((group, groupIndex) => {
+        const table = tables[groupIndex];
+        const header = document.createElement("div");
+        header.className = "row";
+        ["姓名", ...rounds].forEach(label => {
+          const cell = document.createElement("div");
+          cell.className = "cell head";
+          cell.textContent = label;
+          header.appendChild(cell);
+        });
+        table.appendChild(header);
+
+        group.names.forEach((name, rowIndex) => {
+          const row = document.createElement("div");
+          row.className = "row";
+          const nameCell = document.createElement("div");
+          nameCell.className = "cell name";
+          nameCell.textContent = name;
+          row.appendChild(nameCell);
+
+          rounds.forEach((round, roundIndex) => {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            const input = document.createElement("textarea");
+            const key = keyFor(groupIndex, rowIndex, roundIndex);
+            input.className = "entry";
+            input.dataset.key = key;
+            input.maxLength = 50;
+            input.placeholder = "点击填写";
+            input.setAttribute("aria-label", `${name}${round}的选择`);
+            input.value = saved[key] || "";
+            input.addEventListener("input", saveAnswers);
+            cell.appendChild(input);
+            row.appendChild(cell);
+          });
+          table.appendChild(row);
+        });
+      });
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("show");
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function roundedRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function drawCenteredText(ctx, text, x, y, width, height, options = {}) {
+      const {
+        size = 24,
+        weight = 400,
+        color = "#72485c",
+        lineHeight = Math.round(size * 1.35),
+        maxLines = 4
+      } = options;
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = `${weight} ${size}px "Microsoft YaHei", "Noto Sans SC", "PingFang SC", sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const normalized = String(text || "").replace(/\r/g, "");
+      if (!normalized) { ctx.restore(); return; }
+
+      const lines = [];
+      normalized.split("\n").forEach(paragraph => {
+        if (!paragraph) { lines.push(""); return; }
+        let current = "";
+        for (const char of paragraph) {
+          const test = current + char;
+          if (ctx.measureText(test).width <= width - 18 || !current) current = test;
+          else { lines.push(current); current = char; }
+        }
+        if (current) lines.push(current);
+      });
+      if (lines.length > maxLines) {
+        lines.length = maxLines;
+        let last = lines[maxLines - 1];
+        while (ctx.measureText(last + "…").width > width - 18 && last) last = last.slice(0, -1);
+        lines[maxLines - 1] = last + "…";
+      }
+      const totalHeight = (lines.length - 1) * lineHeight;
+      lines.forEach((line, index) => {
+        ctx.fillText(line, x + width / 2, y + height / 2 - totalHeight / 2 + index * lineHeight);
+      });
+      ctx.restore();
+    }
+
+    function drawGroup(ctx, group, groupIndex, top) {
+      const x = 62;
+      const width = 817;
+      const height = 610;
+      const titleHeight = 62;
+      const headerHeight = 45;
+      const rowHeight = (height - titleHeight - headerHeight) / 4;
+      const nameWidth = width * .23;
+      const answerWidth = (width - nameWidth) / 3;
+
+      ctx.save();
+      ctx.shadowColor = "rgba(153, 66, 105, .15)";
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 10;
+      roundedRect(ctx, x, top, width, height, 24);
+      ctx.fillStyle = "rgba(255,249,252,.72)";
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.strokeStyle = "rgba(187,93,136,.62)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.clip();
+
+      const titleGradient = ctx.createLinearGradient(x, 0, x + width, 0);
+      titleGradient.addColorStop(0, "rgba(255,214,232,.84)");
+      titleGradient.addColorStop(.5, "rgba(255,247,251,.9)");
+      titleGradient.addColorStop(1, "rgba(255,214,232,.84)");
+      ctx.fillStyle = titleGradient;
+      ctx.fillRect(x, top, width, titleHeight);
+      ctx.fillStyle = "rgba(255,231,241,.68)";
+      ctx.fillRect(x, top + titleHeight, width, headerHeight);
+      ctx.fillStyle = "rgba(255,239,245,.54)";
+      ctx.fillRect(x, top + titleHeight + headerHeight, nameWidth, height - titleHeight - headerHeight);
+
+      ctx.strokeStyle = "rgba(187,93,136,.58)";
+      ctx.lineWidth = 1.5;
+      const horizontalLines = [top + titleHeight, top + titleHeight + headerHeight];
+      for (let i = 1; i <= 3; i++) horizontalLines.push(top + titleHeight + headerHeight + rowHeight * i);
+      horizontalLines.forEach(y => {
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + width, y); ctx.stroke();
+      });
+      [x + nameWidth, x + nameWidth + answerWidth, x + nameWidth + answerWidth * 2].forEach(lineX => {
+        ctx.beginPath(); ctx.moveTo(lineX, top + titleHeight); ctx.lineTo(lineX, top + height); ctx.stroke();
+      });
+
+      drawCenteredText(ctx, group.title, x, top, width, titleHeight, {
+        size: 29, weight: 500, color: "#974f70", lineHeight: 34, maxLines: 1
+      });
+      ["姓名", ...rounds].forEach((label, index) => {
+        const cellX = index === 0 ? x : x + nameWidth + answerWidth * (index - 1);
+        const cellWidth = index === 0 ? nameWidth : answerWidth;
+        drawCenteredText(ctx, label, cellX, top + titleHeight, cellWidth, headerHeight, {
+          size: 20, weight: 500, color: "#96617a", lineHeight: 24, maxLines: 1
+        });
+      });
+
+      group.names.forEach((name, rowIndex) => {
+        const rowY = top + titleHeight + headerHeight + rowHeight * rowIndex;
+        drawCenteredText(ctx, name, x, rowY, nameWidth, rowHeight, {
+          size: 23, weight: 500, color: "#854e67", lineHeight: 29, maxLines: 2
+        });
+        rounds.forEach((_, roundIndex) => {
+          const input = document.querySelector(`[data-key="${keyFor(groupIndex, rowIndex, roundIndex)}"]`);
+          drawCenteredText(ctx, input ? input.value : "", x + nameWidth + answerWidth * roundIndex, rowY, answerWidth, rowHeight, {
+            size: 21, weight: 400, color: "#72485c", lineHeight: 27, maxLines: 4
+          });
+        });
+      });
+      ctx.restore();
+    }
+
+    async function exportPoster() {
+      exportButton.disabled = true;
+      exportButton.textContent = "正在导出…";
+      try {
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        const image = new Image();
+        image.src = "background.png";
+        await image.decode();
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 941;
+        canvas.height = 1670;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.shadowColor = "rgba(170,82,121,.22)";
+        ctx.shadowBlur = 13;
+        ctx.shadowOffsetY = 4;
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "rgba(255,255,255,.78)";
+        ctx.font = "700 67px \"Microsoft YaHei\", \"SimHei\", \"Noto Sans SC\", sans-serif";
+        ctx.strokeText("我们约会吧", 470.5, 145);
+        ctx.fillStyle = "#82445f";
+        ctx.fillText("我们约会吧", 470.5, 145);
+        ctx.shadowColor = "transparent";
+        ctx.font = "400 20px \"Microsoft YaHei\", \"Noto Sans SC\", sans-serif";
+        ctx.fillStyle = "rgba(126,65,91,.82)";
+        ctx.fillText("——  心 动 选 择 记 录  ——", 470.5, 195);
+        ctx.restore();
+
+        drawGroup(ctx, groups[0], 0, 230);
+        drawGroup(ctx, groups[1], 1, 865);
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+        if (!blob) throw new Error("无法生成图片");
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "我们约会吧.png";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast("图片已导出");
+      } catch (error) {
+        console.error(error);
+        showToast("导出失败，请稍后重试");
+      } finally {
+        exportButton.disabled = false;
+        exportButton.textContent = "导出完整图片";
+      }
+    }
+
+    document.getElementById("clear").addEventListener("click", () => {
+      if (!confirm("确定要清空所有填写内容吗？")) return;
+      document.querySelectorAll(".entry").forEach(input => { input.value = ""; });
+      localStorage.removeItem(storageKey);
+      showToast("内容已清空");
+    });
+    exportButton.addEventListener("click", exportPoster);
+    buildTables();
+  </script>
+</body>
+</html>
